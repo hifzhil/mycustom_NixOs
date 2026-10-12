@@ -8,7 +8,12 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod" ];
+  # Physical AMD box + VirtualBox (SATA or virtio). Replace this file on the
+  # target with: sudo nixos-generate-config --root /mnt
+  boot.initrd.availableKernelModules = [
+    "xhci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod"
+    "virtio_pci" "virtio_scsi" "virtio_blk" "ata_piix" "ohci_pci" "sr_mod"
+  ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
