@@ -1,61 +1,80 @@
-# mycustom_NixOs
+# my-nixxy
 
-Single-host flake for **nixxy**. Layout matches a typical multi-host repo, scaled down to one machine.
+Single-host NixOS flake for **nixxy**.
 
+A simple, modular configuration for an existing NixOS installation.
+
+## Repository structure
+
+```text
+my-nixxy/
+├── flake.nix
+├── flake.lock
+├── hosts/
+│   └── desktop/
+│       ├── default.nix
+│       └── hardware-configuration.nix
+├── modules/
+│   ├── amd-gpu.nix
+│   ├── desktop.nix
+│   ├── dev-tools.nix
+│   └── ai.nix
+└── home/
+    └── hifzhil.nix
 ```
-flake.nix + flake.lock     pins nixpkgs + home-manager
-hosts/desktop/             hardware, boot, disks, hostname, user
-modules/                   reusable: GPU, desktop, dev, AI
-home/                      user apps / dotfiles (home-manager)
-```
 
-Grey in the diagram: inputs and tooling. Purple: config you write. Green: hardware-specific.
+- `flake.nix` — Flake entry point and system configuration.
+- `hosts/desktop/` — Host-specific configuration.
+- `modules/` — Reusable system modules.
+- `home/` — Home Manager configuration.
 
-## First boot
+## Existing installation
 
-On the machine (or from `/mnt` during install):
+Copy the hardware configuration from your existing NixOS installation:
 
 ```bash
-nix flake update          # creates flake.lock; re-check GPU/ROCm after this
+cp /etc/nixos/hardware-configuration.nix hosts/desktop/
+```
+
+## Build and switch
+
+Run these commands from the repository root (the directory containing `flake.nix`):
+
+```bash
+cd ~/my-nixxy
 sudo nixos-rebuild switch --flake .#nixxy
 ```
 
-Replace `hosts/desktop/hardware-configuration.nix` with a fresh scan on the real disk layout:
+The flake is the source of truth. No channels or `system.copySystemConfiguration` are required.
 
-```bash
-sudo nixos-generate-config --show-hardware-config > hosts/desktop/hardware-configuration.nix
-```
+## AMD GPU (RX 9070 XT)
 
-Set a password: `sudo passwd hifzhil`.
+The system uses `nixos-unstable` for newer kernel and Mesa support for the RDNA4 GPU (gfx1201).
 
-`system.copySystemConfiguration` is a channel-era option and is not used here. The flake *is* the source of truth.
+- Mesa and RADV are enabled.
+- ROCm, OpenCL and HIP remain disabled until compatibility is verified.
+- Do not use `HSA_OVERRIDE_GFX_VERSION`.
 
-## RX 9070 XT (RDNA4)
-
-The flake tracks **nixos-unstable** so kernel + Mesa stay new enough for gfx1201. After each `nix flake update`:
+After updating flake inputs, verify the graphics stack:
 
 ```bash
 uname -r
-glxinfo -B          # Mesa
+glxinfo -B
 vulkaninfo --summary
-# only if you uncomment ROCm in modules/amd-gpu.nix:
+```
+
+If ROCm is enabled later:
+
+```bash
 rocminfo | grep -i gfx
 clinfo
 ```
 
-Display/Vulkan (RADV) is enabled. ROCm/OpenCL/HIP is commented until you confirm gfx1201 on that pin. Do not set `HSA_OVERRIDE_GFX_VERSION`.
+## Development environments
 
-VirtualBox guest tools live in `modules/vbox-guest.nix` and are **not** imported on the physical box.
-
-## Dev shells (not NixOS modules)
-
-Buildroot and Yocto do not belong in the system closure.
+Buildroot and Yocto are provided through development shells rather than system-wide NixOS modules.
 
 ```bash
-nix develop .#buildroot   # FHS env via buildFHSEnv
-nix develop .#yocto       # prints a crops/poky docker invocation
+nix develop .#buildroot
+nix develop .#yocto
 ```
-
-## Adding a second machine later
-
-Copy `hosts/desktop` to `hosts/<name>`, give it its own `hardware-configuration.nix`, and add another `nixosConfigurations.<name>` entry in `flake.nix`. Reuse `modules/` as-is.

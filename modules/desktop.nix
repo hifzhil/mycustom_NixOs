@@ -12,7 +12,8 @@
   services.xserver.displayManager.autoLogin.user = "hifzhil";
 
   programs.hyprland.enable = true;
-
+  programs.zsh.enable = true;
+  
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -23,7 +24,13 @@
   };
 
   environment.systemPackages = with pkgs; [
-    kitty
-    xdg-desktop-portal-hyprland
+     kitty
+     fastfetch
+     wget
+     curl 
   ];
+  
+  # Peristent files for machine id so systemd could now the state of my pc machine
+  environment.etc."machine-id".source = "/nix/persist/etc/machine-id";
+
 }

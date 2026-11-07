@@ -11,7 +11,29 @@
   programs.bash.enable = true;
 
   home.packages = with pkgs; [
-    librewolf
+    # Desktop shell
+    quickshell
+
+    # Hyprland
+    hyprpaper
+    hyprlock
+    hypridle
+
+    # Launcher
+    fuzzel
+
+    # Clipboard
+    wl-clipboard
+    cliphist
+
+    # File manager
+    yazi
+
+    # Browser
     brave
-  ];
-}
+
+    # Screenshots
+    grim
+    slurp
+    ];
+  }

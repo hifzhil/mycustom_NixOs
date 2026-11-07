@@ -3,10 +3,19 @@
 {
   environment.systemPackages = with pkgs; [
     vim
-    wget
-    curl
     git
+    zed
   ];
 
-  programs.git.enable = true;
+  programs.git = {
+    enable = true;
+
+    userName = "hifzhil";
+    userEmail = "hifzhil12@gmail.com";
+
+    extraConfig = {
+      init.defaultBranch = "main";
+      pull.rebase = true;
+    };
+  };
 }

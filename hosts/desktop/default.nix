@@ -12,7 +12,6 @@
     ../../modules/desktop.nix
     ../../modules/dev-tools.nix
     ../../modules/ai.nix
-    # ../../modules/vbox-guest.nix  # only when testing inside VirtualBox
   ];
 
   nix.settings.experimental-features = [
@@ -33,18 +32,17 @@
     useXkbConfig = true;
   };
 
-  users.mutableUsers = true;
+  users.mutableUsers = false;
   users.users.hifzhil = {
+    shell = pkgs.zsh;
     isNormalUser = true;
     description = "Ahmad Hifzhil Burhan";
     extraGroups = [
       "wheel"
       "input"
       "networkmanager"
-    ];
-    # First boot: sudo passwd hifzhil
-    # Or set: hashedPassword = "...";  # mkpasswd -m yescrypt
+    ]; 
   };
-
+  
   system.stateVersion = "26.05";
 }
